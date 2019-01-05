@@ -1,3 +1,6 @@
 functions/lib
 .firebase
 node_modules
+.editorconfig
+.gitignore
+.prettierignore

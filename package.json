@@ -3,8 +3,8 @@
   "scripts": {
     "lint": "tslint --project functions/tsconfig.json --config functions/tslint.json --fix",
     "lint:check": "tslint --project functions/tsconfig.json --config functions/tslint.json",
-    "format": "prettier --write \"**/*.{ts,json,js,md}\"",
-    "format:check": "prettier --list-different \"**/*.{ts,json,js,md}\"",
+    "format": "prettier --write **/*.{ts,json,js,md} .*",
+    "format:check": "prettier --list-different **/*.{ts,json,js,md} .*",
     "build": "tsc --project functions/tsconfig.json",
     "serve": "npm run build && firebase serve --only functions",
     "shell": "npm run build && firebase functions:shell",

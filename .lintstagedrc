@@ -1,11 +1,5 @@
 {
-  "functions/**/*.ts": [
-    "tslint --project functions/tsconfig.json --config functions/tslint.json --fix",
-    "prettier --write",
-    "git add"
-  ],
-  "*.json": [
-    "prettier --write",
-    "git add"
-  ]
+  "functions/**/*.ts": ["tslint --project functions/tsconfig.json --config functions/tslint.json --fix", "prettier --write", "git add"],
+  "*.json": ["prettier --write", "git add"],
+  ".*": ["prettier --write", "git add"]
 }
