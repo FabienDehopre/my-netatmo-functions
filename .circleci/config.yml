@@ -1,0 +1,41 @@
+version: 2
+jobs:
+  lint-check:
+    docker:
+      - image: circleci/node:6.16
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: npm --prefix=functions install
+      - run:
+          name: Lint Typescript files
+          command: npm --prefix=functions run lint:check
+  format-check:
+    docker:
+      - image: circleci/node:6.16
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: npm --prefix=functions install
+      - run:
+          name: Check code formatting using prettier
+          command: npm --prefix=functions run format:check
+  build:
+    docker:
+      - image: circleci/node:6.16
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: npm --prefix=functions install
+      - run:
+          name: Build functions using Typescript compiler
+          command: npm --prefix=functions run build
+workflows:
+  version: 2
+  check-functions:
+    jobs:
+      - lint-check
+      - build
