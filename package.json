@@ -1,29 +1,33 @@
 {
-  "name": "functions",
+  "name": "my-netatmo-functions",
+  "version": "1.0.0",
+  "description": "Contains the cloud functions, the firestore rules and indices and the storage rules for the project my-netatmo-dashboard",
+  "repository": {
+    "type": "github",
+    "url": "https://github.com/FabienDehopre/my-netatmo-functions"
+  },
+  "author": {
+    "name": "Fabien Dehopré"
+  },
   "scripts": {
     "lint": "tslint --project functions/tsconfig.json --config functions/tslint.json --fix",
     "lint:check": "tslint --project functions/tsconfig.json --config functions/tslint.json",
     "format": "prettier --write **/*.{ts,json,js,md} .*",
     "format:check": "prettier --list-different **/*.{ts,json,js,md} .*",
-    "build": "tsc --project functions/tsconfig.json",
-    "serve": "npm run build && firebase serve --only functions",
-    "shell": "npm run build && firebase functions:shell",
-    "start": "npm run shell",
-    "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
+    "build": "npm --prefix=functions run build",
+    "serve": "npm --prefix=functions run serve",
+    "shell": "npm --prefix=functions run shell",
+    "start": "npm --prefix=functions start",
+    "deploy": "firebase deploy",
+    "logs": "npm --prefix=functions run logs",
+    "postinstall": "npm --prefix=functions install"
   },
   "main": "lib/index.js",
-  "dependencies": {
-    "firebase-admin": "~6.0.0",
-    "firebase-functions": "^2.1.0",
-    "request": "^2.88.0",
-    "request-promise": "^4.2.2"
-  },
   "devDependencies": {
     "@commitlint/cli": "^7.2.1",
     "@commitlint/config-conventional": "^7.1.2",
     "@commitlint/prompt-cli": "^7.2.1",
-    "@types/request-promise": "^4.1.42",
+    "firebase-tools": "^6.2.2",
     "husky": "^1.3.1",
     "lint-staged": "^8.1.0",
     "prettier": "^1.15.3",
