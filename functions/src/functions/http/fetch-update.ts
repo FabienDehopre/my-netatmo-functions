@@ -17,7 +17,7 @@ import {
 
 export const firstFetchAndUpdateHttp = https.onCall(async (_: any, context: https.CallableContext) => {
   try {
-    if (context.auth == null || context.auth.uid == null || context.auth.uid.trim() === '') {
+    if (!context.auth || !context.auth.uid || context.auth.uid.trim() === '') {
       throw new https.HttpsError('unauthenticated', 'This method requires the user to be authenticated');
     }
 

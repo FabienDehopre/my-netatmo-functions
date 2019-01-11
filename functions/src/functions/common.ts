@@ -12,8 +12,6 @@ import {
   WindGaugeDashboardData,
   RainGaugeDashboardData,
   IndoorDashboardData,
-  mapMainDashboardData2HistoricMainDashboardData,
-  mapModuleDashboardData2HistoricModuleDashboardData,
 } from '../models/dashboard-data';
 import { MainDevice, ModuleDevice } from '../models/device';
 
@@ -127,21 +125,6 @@ export function convertToGeoPoint([lng, lat]): admin.firestore.GeoPoint {
   return new admin.firestore.GeoPoint(lat, lng);
 }
 
-function compareTimestamp(ts: admin.firestore.Timestamp | number | Date, yesterday: number): boolean {
-  let tsToCompare: admin.firestore.Timestamp;
-  if (typeof ts === 'number') {
-    console.warn('received a number instead of a Timestamp', ts);
-    tsToCompare = convertToTimestamp(ts);
-  } else if (ts instanceof Date) {
-    console.warn('received a Date instead of a Timestamp', ts);
-    tsToCompare = admin.firestore.Timestamp.fromDate(ts);
-  } else {
-    tsToCompare = ts;
-  }
-
-  return tsToCompare.toMillis() >= yesterday;
-}
-
 export async function insertDashboardData(uid: string, dashboardData: DashboardData): Promise<void> {
   await admin
     .firestore()
@@ -195,13 +178,11 @@ export function getMainDashboardData(deviceId: string, dashboardData: any): Main
 export function updateStationMainDevice(station: Station, device: any, mainDashboardData: MainDashboardData, yesterday: number): void {
   station.devices = station.devices || [];
   let mainDevice = station.devices.find(d => d.id === device._id && d.type === 'NAMain') as MainDevice;
-  const historicDashboardData = mapMainDashboardData2HistoricMainDashboardData(mainDashboardData);
   if (mainDevice) {
     mainDevice.name = device.module_name;
     mainDevice.firmware = device.firmware;
     mainDevice.wifiStatus = device.wifi_status;
     mainDevice.current = mainDashboardData;
-    mainDevice.last24hHistoric = [...mainDevice.last24hHistoric, historicDashboardData].filter(x => compareTimestamp(x.timeUtc, yesterday));
   } else {
     mainDevice = {
       id: device._id,
@@ -210,7 +191,6 @@ export function updateStationMainDevice(station: Station, device: any, mainDashb
       type: 'NAMain',
       wifiStatus: device.wifi_status,
       current: mainDashboardData,
-      last24hHistoric: [historicDashboardData],
     };
     station.devices.push(mainDevice);
   }
@@ -300,7 +280,6 @@ export function updateStationModuleDevice(
 ): void {
   station.devices = station.devices || [];
   let moduleDevice = station.devices.find(d => d.id === module._id && d.type === module.type) as ModuleDevice;
-  const historicDashboardData = mapModuleDashboardData2HistoricModuleDashboardData(moduleDashboardData);
   if (moduleDevice) {
     moduleDevice.rfStatus = module.rf_status;
     moduleDevice.battery = {
@@ -308,9 +287,6 @@ export function updateStationModuleDevice(
       percent: module.battery_percent,
     };
     moduleDevice.current = moduleDashboardData;
-    moduleDevice.last24hHistoric = [...moduleDevice.last24hHistoric, historicDashboardData].filter(x =>
-      compareTimestamp(x.timeUtc, yesterday)
-    );
   } else {
     moduleDevice = {
       id: module._id,
@@ -323,7 +299,6 @@ export function updateStationModuleDevice(
         percent: module.battery_percent,
       },
       current: moduleDashboardData,
-      last24hHistoric: [historicDashboardData],
     };
     station.devices.push(moduleDevice);
   }
