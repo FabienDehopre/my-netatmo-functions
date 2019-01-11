@@ -1,41 +1,71 @@
 version: 2
 jobs:
-  lint-check:
-    docker:
-      - image: circleci/node:6.16
-    steps:
-      - checkout
-      - run:
-          name: Install dependencies
-          command: npm install
-      - run:
-          name: Lint Typescript files
-          command: npm run lint:check
-  format-check:
-    docker:
-      - image: circleci/node:6.16
-    steps:
-      - checkout
-      - run:
-          name: Install dependencies
-          command: npm install
-      - run:
-          name: Check code formatting using prettier
-          command: npm run format:check
   build:
+    working_directory: ~/project
     docker:
       - image: circleci/node:6.16
     steps:
       - checkout
       - run:
+          name: Show current branch name
+          command: echo ${CIRCLE_BRANCH}
+      - run:
+          name: Show current directory
+          command: pwd
+      - restore_cache:
+          key: v1-dependencies-{{ checksum "package.json" }}-{{ checksum "functions/package.json" }}
+      - run:
           name: Install dependencies
           command: npm install
+      - save_cache:
+          key: v1-dependencies-{{ checksum "package.json" }}-{{ checksum "functions/package.json" }}
+          paths:
+            - node_modules
+            - functions/node_modules
       - run:
-          name: Build functions using Typescript compiler
+          name: Linting TypeScript files
+          command: npm run lint:check
+      - run:
+          name: Checking code formatting
+          command: npm run format:check
+      - run:
+          name: Building
           command: npm run build
+      - save_cache:
+          key: v1-dist-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_SHA1 }}
+          paths:
+            - functions/lib
+            - functions/package.json
+            - package.json
+            - firestore.rules
+            - firestore.indexes.json
+            - storage.rules
+            - firebase.json
+            - .firebaserc
+  deploy:
+    working_directory: ~/project
+    docker:
+      - image: circleci/node:6.16
+    steps:
+      - run:
+          name: Show current branch
+          command: echo ${CIRCLE_BRANCH}
+      - restore_cache:
+          key: v1-dist-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_SHA1 }}
+      - restore_cache:
+          key: v1-dependencies-{{ checksum "package.json" }}-{{ checksum "functions/package.json" }}
+      - run:
+          name: Deploy Master to Firebase
+          command: npm run deploy -- --token=$FIREBASE_TOKEN
+
 workflows:
   version: 2
-  check-functions:
+  build_and_deploy:
     jobs:
-      - lint-check
       - build
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
